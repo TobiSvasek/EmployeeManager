@@ -49,7 +49,6 @@ This is a simple Employee Manager application built with Flask. It allows you to
 - `app.py`: Main application file
 - `templates/`: HTML templates
 - `static/`: Static files (CSS, JavaScript)
-- `models.py`: Database models
 - `requirements.txt`: List of dependencies
 
 ## License
