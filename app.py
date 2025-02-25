@@ -88,10 +88,13 @@ def admin():
     if 'admin_id' not in session:
         return redirect(url_for('admin_login'))
 
+    admin_user = Employee.query.get(session['admin_id'])
+    if not admin_user or not admin_user.is_admin:
+        return redirect(url_for('admin_login'))
+
     employees = Employee.query.all()
     attendances = Attendance.query.all()
     return render_template('admin.html', employees=employees, attendances=attendances)
-
 
 @app.route('/clock', methods=['GET', 'POST'])
 def clock():
@@ -128,11 +131,6 @@ def clock():
 
     return render_template('clock.html', employee=employee, success_message=success_message, error_message=error_message)
 
-@app.route('/logout')
-def logout():
-    session.pop('employee_id', None)
-    return redirect(url_for('login'))
-
 
 @app.route('/add_employee', methods=['GET', 'POST'])
 def add_employee():
@@ -150,6 +148,10 @@ def add_employee():
 
     return render_template('add_employee.html')  # Zobrazíme formulář
 
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     with app.app_context():
