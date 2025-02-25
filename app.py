@@ -13,6 +13,8 @@ class Employee(db.Model):
     name = db.Column(db.String(100), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     is_present = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    is_authenticated = db.Column(db.Boolean, default=False)  # Add this line
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -44,11 +46,43 @@ def login():
 
         if employee and employee.check_password(password):
             session['employee_id'] = employee.id
+            employee.is_authenticated = True  # Set is_authenticated to True
+            db.session.commit()  # Save the change to the database
             return redirect(url_for('clock'))
         else:
             error = "Invalid credentials. Please try again."
 
     return render_template('login.html', error=error)
+
+@app.route('/admin_login', methods=['GET', 'POST'])
+def admin_login():
+    error = None
+    if request.method == 'POST':
+        name = request.form['employee_name']
+        password = request.form['password']
+        employee = Employee.query.filter_by(name=name).first()
+
+        if employee and employee.check_password(password) and employee.is_admin:
+            session['admin_id'] = employee.id
+            return redirect(url_for('admin'))
+        else:
+            error = "Invalid credentials or not an admin. Please try again."
+
+    return render_template('admin_login.html', error=error)
+
+
+@app.route('/admin')
+def admin():
+    if 'admin_id' not in session:
+        return redirect(url_for('admin_login'))
+
+    employee = Employee.query.get(session['admin_id'])
+    if not employee.is_admin:
+        return redirect(url_for('admin_login'))  # Redirect non-admin users to the admin login page
+
+    employees = Employee.query.all()
+    attendances = Attendance.query.all()
+    return render_template('admin.html', employees=employees, attendances=attendances)
 
 
 @app.route('/clock', methods=['GET', 'POST'])
@@ -57,25 +91,25 @@ def clock():
         return redirect(url_for('login'))
 
     employee = Employee.query.get(session['employee_id'])
+    if not employee.is_authenticated:
+        return redirect(url_for('login'))  # Redirect non-authenticated users to the login page
+
     success_message = None
     error_message = None
 
     if request.method == 'POST':
         action = request.form['action']
         if action == 'clock_in':
-            # Check if there is already an active clock in record
             active_attendance = Attendance.query.filter_by(employee_id=employee.id, clock_out_time=None).first()
             if active_attendance:
                 error_message = "You are already clocked in."
             else:
-                # Handle clock in logic
                 attendance = Attendance(employee_id=employee.id, clock_in_time=datetime.now())
                 employee.is_present = True
                 db.session.add(attendance)
                 db.session.commit()
                 success_message = "Clocked in successfully!"
         elif action == 'clock_out':
-            # Handle clock out logic
             attendance = Attendance.query.filter_by(employee_id=employee.id, clock_out_time=None).first()
             if attendance:
                 attendance.clock_out_time = datetime.now()
@@ -90,13 +124,6 @@ def clock():
 def logout():
     session.pop('employee_id', None)
     return redirect(url_for('login'))
-
-
-@app.route('/admin')
-def admin():
-    employees = Employee.query.all()
-    attendances = Attendance.query.all()
-    return render_template('admin.html', employees=employees, attendances=attendances)
 
 
 @app.route('/add_employee', methods=['GET', 'POST'])
