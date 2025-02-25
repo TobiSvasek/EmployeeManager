@@ -3,6 +3,13 @@
 <head>
     <title>Clock In/Out</title>
     <link rel="stylesheet" href="../static/styles.css">
+    <script>
+        function redirectToLogin() {
+            setTimeout(function() {
+                window.location.href = "{{ url_for('login') }}";
+            }, 3000);
+        }
+    </script>
 </head>
 <body>
     <h1>Welcome, {{ employee.name }}</h1>
@@ -10,5 +17,9 @@
         <button type="submit" name="action" value="clock_in">Clock In</button>
         <button type="submit" name="action" value="clock_out">Clock Out</button>
     </form>
+    {% if success_message %}
+        <p style="color: green;">{{ success_message }}</p>
+        <script>redirectToLogin();</script>
+    {% endif %}
 </body>
 </html>

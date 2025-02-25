@@ -57,32 +57,28 @@ def clock():
         return redirect(url_for('login'))
 
     employee = Employee.query.get(session['employee_id'])
+    success_message = None
 
     if request.method == 'POST':
         action = request.form['action']
-
         if action == 'clock_in':
-            last_attendance = Attendance.query.filter_by(employee_id=employee.id, clock_out_time=None).first()
-            if last_attendance:
-                return "Error: Already clocked in!", 400
-
+            # Handle clock in logic
             attendance = Attendance(employee_id=employee.id, clock_in_time=datetime.now())
-            db.session.add(attendance)
             employee.is_present = True
-
+            db.session.add(attendance)
+            db.session.commit()
+            success_message = "Clocked in successfully!"
         elif action == 'clock_out':
-            attendance = Attendance.query.filter_by(employee_id=employee.id, clock_out_time=None).order_by(
-                Attendance.clock_in_time.desc()).first()
+            # Handle clock out logic
+            attendance = Attendance.query.filter_by(employee_id=employee.id, clock_out_time=None).first()
             if attendance:
                 attendance.clock_out_time = datetime.now()
-                attendance.total_time = (attendance.clock_out_time - attendance.clock_in_time).total_seconds() / 3600
+                attendance.total_time = (attendance.clock_out_time - attendance.clock_in_time).total_seconds() / 3600.0
                 employee.is_present = False
+                db.session.commit()
+                success_message = "Clocked out successfully!"
 
-        db.session.commit()
-        return redirect(url_for('clock'))
-
-    return render_template('clock.html', employee=employee)
-
+    return render_template('clock.html', employee=employee, success_message=success_message)
 
 @app.route('/logout')
 def logout():
