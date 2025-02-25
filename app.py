@@ -44,6 +44,8 @@ def login():
         if employee and employee.check_password(password):
             session['employee_id'] = employee.id
             return redirect(url_for('clock'))
+        else:
+            return "Invalid credentials", 401
 
     return render_template('login.html')
 
