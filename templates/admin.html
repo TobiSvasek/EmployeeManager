@@ -9,7 +9,13 @@
     <h2>Employees</h2>
     <ul>
         {% for employee in employees %}
-            <li>{{ employee.name }} - {% if employee.is_present %}Present{% else %}Absent{% endif %}</li>
+            <li>{{ employee.name }} -
+    {% if employee.is_present %}
+        <span style="color: green;">Present</span>
+    {% else %}
+        <span style="color: red;">Absent</span>
+    {% endif %}
+</li>
         {% endfor %}
     </ul>
     <h2>Attendance Records</h2>
