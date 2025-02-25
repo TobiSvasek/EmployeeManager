@@ -21,5 +21,8 @@
         <p style="color: green;">{{ success_message }}</p>
         <script>redirectToLogin();</script>
     {% endif %}
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
 </body>
 </html>

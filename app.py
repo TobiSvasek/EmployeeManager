@@ -58,16 +58,22 @@ def clock():
 
     employee = Employee.query.get(session['employee_id'])
     success_message = None
+    error_message = None
 
     if request.method == 'POST':
         action = request.form['action']
         if action == 'clock_in':
-            # Handle clock in logic
-            attendance = Attendance(employee_id=employee.id, clock_in_time=datetime.now())
-            employee.is_present = True
-            db.session.add(attendance)
-            db.session.commit()
-            success_message = "Clocked in successfully!"
+            # Check if there is already an active clock in record
+            active_attendance = Attendance.query.filter_by(employee_id=employee.id, clock_out_time=None).first()
+            if active_attendance:
+                error_message = "You are already clocked in."
+            else:
+                # Handle clock in logic
+                attendance = Attendance(employee_id=employee.id, clock_in_time=datetime.now())
+                employee.is_present = True
+                db.session.add(attendance)
+                db.session.commit()
+                success_message = "Clocked in successfully!"
         elif action == 'clock_out':
             # Handle clock out logic
             attendance = Attendance.query.filter_by(employee_id=employee.id, clock_out_time=None).first()
@@ -78,7 +84,7 @@ def clock():
                 db.session.commit()
                 success_message = "Clocked out successfully!"
 
-    return render_template('clock.html', employee=employee, success_message=success_message)
+    return render_template('clock.html', employee=employee, success_message=success_message, error_message=error_message)
 
 @app.route('/logout')
 def logout():
