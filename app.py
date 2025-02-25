@@ -36,18 +36,19 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
-        employee_id = request.form['employee_id']
+        name = request.form['employee_name']
         password = request.form['password']
-        employee = Employee.query.filter_by(id=employee_id).first()
+        employee = Employee.query.filter_by(name=name).first()
 
         if employee and employee.check_password(password):
             session['employee_id'] = employee.id
             return redirect(url_for('clock'))
         else:
-            return "Invalid credentials", 401
+            error = "Invalid credentials. Please try again."
 
-    return render_template('login.html')
+    return render_template('login.html', error=error)
 
 
 @app.route('/clock', methods=['GET', 'POST'])
