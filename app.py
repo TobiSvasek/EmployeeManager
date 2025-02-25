@@ -62,10 +62,22 @@ def admin_login():
         password = request.form['password']
         employee = Employee.query.filter_by(name=name).first()
 
-        if employee and employee.check_password(password) and employee.is_admin:
-            session['admin_id'] = employee.id
-            return redirect(url_for('admin'))
+        if employee:
+            print(f"Employee found: {employee.name}")
+            if employee.check_password(password):
+                print("Password is correct")
+                if employee.is_admin:
+                    print("Employee is admin")
+                    session['admin_id'] = employee.id
+                    return redirect(url_for('admin'))
+                else:
+                    print("Employee is not admin")
+                    error = "Invalid credentials or not an admin. Please try again."
+            else:
+                print("Password is incorrect")
+                error = "Invalid credentials or not an admin. Please try again."
         else:
+            print("Employee not found")
             error = "Invalid credentials or not an admin. Please try again."
 
     return render_template('admin_login.html', error=error)
