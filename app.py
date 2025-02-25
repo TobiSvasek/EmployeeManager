@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import session, redirect, url_for, render_template
 
 app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -87,10 +88,6 @@ def admin_login():
 def admin():
     if 'admin_id' not in session:
         return redirect(url_for('admin_login'))
-
-    employee = Employee.query.get(session['admin_id'])
-    if not employee.is_admin:
-        return redirect(url_for('admin_login'))  # Redirect non-admin users to the admin login page
 
     employees = Employee.query.all()
     attendances = Attendance.query.all()
