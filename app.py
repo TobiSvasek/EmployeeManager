@@ -1,3 +1,5 @@
+# NOTE: Theme is stored in both session and cookies – this may cause sync issues.
+
 from flask import Flask, render_template, request, redirect, url_for, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -14,7 +16,7 @@ class Employee(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     is_present = db.Column(db.Boolean, default=False)
     is_admin = db.Column(db.Boolean, default=False)
-    is_authenticated = db.Column(db.Boolean, default=False)  # Add this line
+    is_authenticated = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -146,13 +148,19 @@ def toggle_theme():
     current_theme = request.cookies.get('theme', 'light')
     new_theme = 'dark' if current_theme == 'light' else 'light'
     response = make_response(redirect(request.referrer))
-    response.set_cookie('theme', new_theme, max_age=30*24*60*60)  # Cookie expires in 30 days
+    response.set_cookie('theme', new_theme, max_age=30*24*60*60)
+    session['theme'] = new_theme  # Set theme in session
     return response
 
 @app.route('/logout')
 def logout():
+    theme = session.get('theme', 'light')  # Save current theme
     session.clear()
-    return redirect(url_for('login'))
+    session['theme'] = theme  # Restore theme after clearing session
+    response = make_response(redirect(url_for('login')))
+    return response
+
+
 
 if __name__ == '__main__':
     with app.app_context():
