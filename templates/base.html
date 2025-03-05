@@ -8,7 +8,5 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='futuristic_button.css') }}">
     <script src="{{ url_for('static', filename='scripts/animations.js') }}" defer></script>
 </head>
-<body class="{{ session.get('theme', 'light') }}">
+<body class="{{ request.cookies.get('theme', 'light') }}">
     {% block content %}{% endblock %}
-</body>
-</html>

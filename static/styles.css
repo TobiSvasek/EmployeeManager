@@ -52,12 +52,16 @@ body.light form {
 }
 
 body.dark {
-    background-color: #515151;
+    background-color: #323232;
     color: white;
 }
 
 body.dark form {
     background: #333;
+}
+
+body.dark h1, body.dark h2 {
+    color: white;
 }
 
 #theme-toggle-button {

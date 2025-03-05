@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -46,8 +46,9 @@ def login():
 
         if employee and employee.check_password(password):
             session['employee_id'] = employee.id
-            employee.is_authenticated = True  # Set is_authenticated to True
-            db.session.commit()  # Save the change to the database
+            employee.is_authenticated = True
+            db.session.commit()
+            session['theme'] = request.cookies.get('theme', 'light')  # Set theme from cookie
             return redirect(url_for('clock'))
         else:
             error = "Invalid credentials. Please try again."
@@ -62,22 +63,14 @@ def admin_login():
         password = request.form['password']
         employee = Employee.query.filter_by(name=name).first()
 
-        if employee:
-            print(f"Employee found: {employee.name}")
-            if employee.check_password(password):
-                print("Password is correct")
-                if employee.is_admin:
-                    print("Employee is admin")
-                    session['admin_id'] = employee.id
-                    return redirect(url_for('admin'))
-                else:
-                    print("Employee is not admin")
-                    error = "Invalid credentials or not an admin. Please try again."
+        if employee and employee.check_password(password):
+            if employee.is_admin:
+                session['admin_id'] = employee.id
+                session['theme'] = request.cookies.get('theme', 'light')  # Set theme from cookie
+                return redirect(url_for('admin'))
             else:
-                print("Password is incorrect")
                 error = "Invalid credentials or not an admin. Please try again."
         else:
-            print("Employee not found")
             error = "Invalid credentials or not an admin. Please try again."
 
     return render_template('admin_login.html', error=error)
@@ -150,10 +143,11 @@ def add_employee():
 
 @app.route('/toggle_theme', methods=['POST'])
 def toggle_theme():
-    current_theme = session.get('theme', 'light')
+    current_theme = request.cookies.get('theme', 'light')
     new_theme = 'dark' if current_theme == 'light' else 'light'
-    session['theme'] = new_theme
-    return redirect(request.referrer)
+    response = make_response(redirect(request.referrer))
+    response.set_cookie('theme', new_theme, max_age=30*24*60*60)  # Cookie expires in 30 days
+    return response
 
 @app.route('/logout')
 def logout():
