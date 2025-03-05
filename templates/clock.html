@@ -1,28 +1,25 @@
-<!DOCTYPE html>
-<html lang="">
-<head>
-    <title>Clock In/Out</title>
-    <link rel="stylesheet" href="../static/styles.css">
+{% extends "base.html" %}
+
+{% block title %}Clock In/Out{% endblock %}
+
+{% block content %}
+<h1>Welcome, {{ employee.name }}!</h1>
+<form method="post">
+    <button type="submit" name="action" value="clock_in">Clock In</button>
+    <button type="submit" name="action" value="clock_out">Clock Out</button>
+</form>
+{% if success_message %}
+    <p style="color: green;">{{ success_message }}</p>
     <script>
         function redirectToLogin() {
             setTimeout(function() {
                 window.location.href = "{{ url_for('login') }}";
             }, 3000);
         }
+        redirectToLogin();
     </script>
-</head>
-<body>
-    <h1>Welcome, {{ employee.name }}!</h1>
-    <form method="post">
-        <button type="submit" name="action" value="clock_in">Clock In</button>
-        <button type="submit" name="action" value="clock_out">Clock Out</button>
-    </form>
-    {% if success_message %}
-        <p style="color: green;">{{ success_message }}</p>
-        <script>redirectToLogin();</script>
-    {% endif %}
-    {% if error_message %}
-        <p style="color: red;">{{ error_message }}</p>
-    {% endif %}
-</body>
-</html>
+{% endif %}
+{% if error_message %}
+    <p style="color: red;">{{ error_message }}</p>
+{% endif %}
+{% endblock %}

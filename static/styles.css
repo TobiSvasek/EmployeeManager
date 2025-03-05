@@ -1,6 +1,6 @@
 /* static/styles.css */
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Arial", sans-serif;
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
@@ -34,10 +34,74 @@ button {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
-    border: 1px solid #ccc;
+    border: none; /* Remove the border */
     border-radius: 4px;
 }
 
 button:hover {
     background-color: #4cae4c;
+}
+
+body.light {
+    background-color: white;
+    color: black;
+}
+
+body.light form {
+    background: #fff;
+}
+
+body.dark {
+    background-color: #515151;
+    color: white;
+}
+
+body.dark form {
+    background: #333;
+}
+
+#theme-toggle-button {
+    background: linear-gradient(45deg, #000000, #ffffff);
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 50px;
+    color: white;
+    cursor: pointer;
+    font-size: 24px;
+    padding: 10px 20px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+body.light #theme-toggle-button {
+    background-position: 0% 50%;
+}
+
+body.dark #theme-toggle-button {
+    background-position: 100% 50%;
+}
+
+body.light #theme-toggle-button {
+    animation: shift-left 0.5s forwards;
+}
+
+body.dark #theme-toggle-button {
+    animation: shift-right 0.5s forwards;
+}
+
+@keyframes shift-left {
+    from {
+        background-position: 100% 0%;
+    }
+    to {
+        background-position: 0% 100%;
+    }
+}
+
+@keyframes shift-right {
+    from {
+        background-position: 0% 100%;
+    }
+    to {
+        background-position: 100% 0%;
+    }
 }

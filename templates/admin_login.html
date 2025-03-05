@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Admin Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
     <form method="post">
         <input type="text" name="employee_name" placeholder="Admin Name" required>
         <input type="password" name="password" placeholder="Password" required>
@@ -16,5 +14,4 @@
     <form action="{{ url_for('login') }}" method="get">
         <button type="submit" style="background-color: indianred">Back</button>
     </form>
-</body>
-</html>
+{% endblock %}

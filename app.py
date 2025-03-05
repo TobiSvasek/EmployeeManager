@@ -148,6 +148,13 @@ def add_employee():
 
     return render_template('add_employee.html')  # Zobrazíme formulář
 
+@app.route('/toggle_theme', methods=['POST'])
+def toggle_theme():
+    current_theme = session.get('theme', 'light')
+    new_theme = 'dark' if current_theme == 'light' else 'light'
+    session['theme'] = new_theme
+    return redirect(request.referrer)
+
 @app.route('/logout')
 def logout():
     session.clear()
