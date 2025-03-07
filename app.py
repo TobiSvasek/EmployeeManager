@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from urllib.parse import urlsplit
 app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///employees.db'
@@ -35,6 +35,7 @@ class Attendance(db.Model):
 def index():
     return redirect(url_for('login'))
 
+from urllib.parse import urlsplit
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -46,55 +47,20 @@ def login():
 
         if employee and employee.check_password(password):
             session['employee_id'] = employee.id
-            employee.is_authenticated = True  # Set is_authenticated to True
-            db.session.commit()  # Save the change to the database
-            return redirect(url_for('clock'))
+            session['login_time'] = datetime.now().timestamp()  # Set login timestamp
+            employee.is_authenticated = True
+            db.session.commit()
+            next_page = request.args.get('next')
+            if not next_page or urlsplit(next_page).netloc != '':
+                next_page = url_for('clock')
+            if employee.is_admin:
+                return redirect(next_page)
+            else:
+                return redirect(next_page)
         else:
             error = "Invalid credentials. Please try again."
 
     return render_template('login.html', error=error)
-
-@app.route('/admin_login', methods=['GET', 'POST'])
-def admin_login():
-    error = None
-    if request.method == 'POST':
-        name = request.form['employee_name']
-        password = request.form['password']
-        employee = Employee.query.filter_by(name=name).first()
-
-        if employee:
-            print(f"Employee found: {employee.name}")
-            if employee.check_password(password):
-                print("Password is correct")
-                if employee.is_admin:
-                    print("Employee is admin")
-                    session['admin_id'] = employee.id
-                    return redirect(url_for('admin'))
-                else:
-                    print("Employee is not admin")
-                    error = "Invalid credentials or not an admin. Please try again."
-            else:
-                print("Password is incorrect")
-                error = "Invalid credentials or not an admin. Please try again."
-        else:
-            print("Employee not found")
-            error = "Invalid credentials or not an admin. Please try again."
-
-    return render_template('admin_login.html', error=error)
-
-
-@app.route('/admin')
-def admin():
-    if 'admin_id' not in session:
-        return redirect(url_for('admin_login'))
-
-    admin_user = Employee.query.get(session['admin_id'])
-    if not admin_user or not admin_user.is_admin:
-        return redirect(url_for('admin_login'))
-
-    employees = Employee.query.all()
-    attendances = Attendance.query.all()
-    return render_template('admin.html', employees=employees, attendances=attendances)
 
 @app.route('/clock', methods=['GET', 'POST'])
 def clock():
@@ -103,7 +69,7 @@ def clock():
 
     employee = Employee.query.get(session['employee_id'])
     if not employee.is_authenticated:
-        return redirect(url_for('login'))  # Redirect non-authenticated users to the login page
+        return redirect(url_for('login'))
 
     success_message = None
     error_message = None
@@ -129,24 +95,27 @@ def clock():
                 db.session.commit()
                 success_message = "Clocked out successfully!"
 
-    return render_template('clock.html', employee=employee, success_message=success_message, error_message=error_message)
+    employees = Employee.query.all() if employee.is_admin else None
+    attendances = Attendance.query.all() if employee.is_admin else None
 
+    return render_template('clock.html', employee=employee, success_message=success_message, error_message=error_message, employees=employees, attendances=attendances)
 
 @app.route('/add_employee', methods=['GET', 'POST'])
 def add_employee():
     if request.method == 'POST':
         name = request.form['name']
         password = request.form['password']
+        is_admin = 'is_admin' in request.form
 
-        new_employee = Employee(name=name)
-        new_employee.set_password(password)  # Hashujeme heslo
+        new_employee = Employee(name=name, is_admin=is_admin)
+        new_employee.set_password(password)
 
         db.session.add(new_employee)
         db.session.commit()
 
-        return redirect(url_for('admin'))  # Přesměrování zpět na admin panel
+        return redirect(url_for('clock'))
 
-    return render_template('add_employee.html')  # Zobrazíme formulář
+    return render_template('add_employee.html')
 
 @app.route('/toggle_theme', methods=['POST'])
 def toggle_theme():
@@ -155,7 +124,7 @@ def toggle_theme():
     session['theme'] = new_theme
     return redirect(request.referrer)
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     return redirect(url_for('login'))

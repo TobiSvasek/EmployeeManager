@@ -10,16 +10,32 @@
 </form>
 {% if success_message %}
     <p style="color: green;">{{ success_message }}</p>
-    <script>
-        function redirectToLogin() {
-            setTimeout(function() {
-                window.location.href = "{{ url_for('login') }}";
-            }, 3000);
-        }
-        redirectToLogin();
-    </script>
 {% endif %}
 {% if error_message %}
     <p style="color: red;">{{ error_message }}</p>
 {% endif %}
+
+{% if employee.is_admin %}
+    <div class="admin-panel">
+        <h1><u>Admin Panel</u></h1>
+        <h2>Employees</h2>
+        <ul>
+            {% for employee in employees %}
+                <li>{{ employee.name }} -
+                    {% if employee.is_present %}
+                        <span style="color: green;">Present</span>
+                    {% else %}
+                        <span style="color: red;">Absent</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        <form action="{{ url_for('add_employee') }}" method="get">
+            <button type="submit">Add Employee</button>
+        </form>
+    </div>
+{% endif %}
+<form action="{{ url_for('logout') }}" method="post">
+    <button type="submit" style="background-color: indianred">Logout</button>
+</form>
 {% endblock %}

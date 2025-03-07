@@ -19,12 +19,82 @@ form {
     max-width: 400px;
 }
 
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.form-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    accent-color: #5cb85c; /* Use the same color as the buttons */
+}
+
+.form-checkbox label {
+    font-size: 16px;
+    color: #333;
+}
+
 input[type="text"], input[type="password"] {
     width: 95%;
     padding: 10px;
     margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 4px;
+}
+
+.admin-panel {
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    max-width: 600px;
+    width: 100%;
+}
+
+body.light .admin-panel {
+    background: #fff;
+    color: #333;
+}
+
+body.dark .admin-panel {
+    background: #444;
+    color: #fff;
+}
+
+.admin-panel h1, .admin-panel h2 {
+    text-align: center;
+}
+
+.admin-panel ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.admin-panel li {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.admin-panel li span {
+    font-weight: bold;
+}
+
+.admin-panel button {
+    background-color: #5cb85c;
+    color: white;
+    cursor: pointer;
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 4px;
+}
+
+.admin-panel button:hover {
+    background-color: #4cae4c;
 }
 
 button {
